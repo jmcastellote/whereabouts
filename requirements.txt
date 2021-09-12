@@ -1,0 +1,6 @@
+fastapi[all]
+psycopg2
+typing
+sqlalchemy
+pydantic
+uvicorn
