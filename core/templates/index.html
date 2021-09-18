@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<title>Whereabouts - Nubelibre</title>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+    <!--Load Leaflet stuff-->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+
+</head>
+<body>
+
+<!--Use all available space in the browser-->
+<div id="mapid" style="width: 99%; height: 98%; position: absolute;"></div>
+
+<!--Manage the map-->
+<script>
+    var circle_color = '#00ff99';
+    var circle_fill_color = '#b3ffe0';
+    var circle_fill_opacity = 0.5;
+
+	var ot_path = new Array();
+
+	var ot_icon = L.icon({
+		iconUrl: 'https://static.dev.dben.to/whereabouts/img/owntracks.png',
+		shadowUrl: 'https://static.dev.dben.to/whereabouts/img/marker-shadow.png',
+
+		iconSize:     [25, 32], // size of the icon
+		shadowSize:   [45, 45], // size of the shadow
+		iconAnchor:   [12, 32], // point of the icon which will correspond to marker's location
+		shadowAnchor: [12, 45],  // the same for the shadow
+		popupAnchor:  [0, -25] // point from which the popup should open relative to the iconAnchor
+	});
+
+	var ha_icon = L.icon({
+		iconUrl: 'https://static.dev.dben.to/whereabouts/img/marker1.png',
+		shadowUrl: 'https://static.dev.dben.to/whereabouts/img/marker-shadow.png',
+
+		iconSize:     [24, 34], // size of the icon
+		shadowSize:   [45, 45], // size of the shadow
+		iconAnchor:   [12, 34], // point of the icon which will correspond to marker's location
+		shadowAnchor: [12, 45],  // the same for the shadow
+		popupAnchor:  [0, -29] // point from which the popup should open relative to the iconAnchor
+	});
+
+	//L.Icon.Default.prototype.options.iconUrl = 'https://static.dev.dben.to/whereabouts/img/owntracks.png';
+    //Initialize map
+	var mymap = L.map('mapid').setView([10, 40], 3);
+
+    //Use mapbox map tiles
+	L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiY2FzdGVsIiwiYSI6ImNqcHpxcW5scDBkbzczd3Bsa2MwY3V4eHEifQ.-ZMEmuybMfcsdkVbWah0dw', {
+		maxZoom: 18,
+		attribution: 'Whereabouts - Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>, ' +
+			'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+		id: 'mapbox/dark-v10',
+	}).addTo(mymap);
+
+    //Fetch movie info and display it - this only works with decent browsers (not IE not Safari)
+    fetch('http://crane:8787/records/c-phone-a/own-tracks/')
+    .then(res => res.json())
+    .then(json => json.forEach(function(record) {
+      //Display Marker
+      L.marker([record.latitude,record.longitude], {icon: ot_icon}).addTo(mymap)
+        .bindPopup("<b>"+record.device+" - "+record.datetime+"</b>");    
+	  ot_path.push([record.latitude,record.longitude]);
+    }))
+	.then(function(){
+		var polyline = L.polyline(ot_path, {color: 'blue'}).addTo(mymap);
+	});
+
+    fetch('http://crane:8787/records/c-phone-a/home-assist/')
+    .then(res => res.json())
+    .then(json => json.forEach(function(record) {
+      //Display Marker
+      L.marker([record.latitude,record.longitude], {icon: ha_icon}).addTo(mymap)
+        .bindPopup("<b>"+record.device+" - "+record.datetime+"</b>");    
+    }));
+
+</script>
+</body>
+</html>
