@@ -46,7 +46,7 @@ async def index(request: Request):
 @app.get("/records/", response_model=List[schemas.GpsRecord])
 @app.get("/records/{device}/", response_model=List[schemas.GpsRecord])
 @app.get("/records/{device}/{app}/", response_model=List[schemas.GpsRecord])
-def get_records(device: str = None, app: str = None, limit: int = 50, db: Session = Depends(get_db)):
+def get_records(device: str = None, app: str = None, limit: int = 500, db: Session = Depends(get_db)):
     if not device and not app:
         records = crud.get_gpsrecords(db, limit=limit)
     if device and not app:

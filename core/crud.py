@@ -39,6 +39,7 @@ def create_gpsrecord(db: Session, gpsrecord: schemas.GpsRecordCreate):
     db_gpsrecord = GpsRecord(**gpsrecord.dict())
     last = get_last_gpsrecord(db, db_gpsrecord.device, db_gpsrecord.app)
     distance = hv_distance(db_gpsrecord,last)
+    db_gpsrecord.distance = distance
     if distance >= MIN_DISTANCE:
         try:
             db.add(db_gpsrecord)

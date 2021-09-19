@@ -18,6 +18,7 @@ class GpsRecord(Base):
     device = Column(String(length=128))
     app = Column(String(length=128))
     user = Column(String(length=32), default='castel')
+    distance = Column(Float())
 
     #UniqueConstraint('datetime','device','app','user', name='unique_device_record')
     #This needs to be executed manually

@@ -15,6 +15,7 @@ class GpsRecordBase(BaseModel):
     device: str
     app: str
     user: str
+    distance: Optional[float]
 
 
 class GpsRecordCreate(GpsRecordBase):
