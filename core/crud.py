@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import asc, desc, and_
 
 from core.model.gps_record import GpsRecord
-import core.schemas as schemas
+import core.schemas.gpsrecord as gps
 import core.haversine as haversine
 
 MIN_DISTANCE = 50
@@ -19,7 +19,7 @@ def get_last_gpsrecord(db: Session, device: str, app: str):
         )
     ).order_by(GpsRecord.datetime.desc()).first()
 
-def get_gpsrecords_by_app(db: Session, device: str, app: str, limit: int = 100):
+def get_gpsrecords_by_app(db: Session, device: str, app: str, limit: int = 600):
     return db.query(GpsRecord).filter(
         and_(
             GpsRecord.device == device, 
@@ -35,7 +35,7 @@ def get_gpsrecords_by_device(db: Session, device: str, limit: int = 100):
 def get_gpsrecords(db: Session, limit: int = 100):
     return db.query(GpsRecord).order_by(GpsRecord.datetime.desc()).limit(limit).all()
 
-def create_gpsrecord(db: Session, gpsrecord: schemas.GpsRecordCreate):
+def create_gpsrecord(db: Session, gpsrecord: gps.GpsRecordCreate):
     db_gpsrecord = GpsRecord(**gpsrecord.dict())
     last = get_last_gpsrecord(db, db_gpsrecord.device, db_gpsrecord.app)
     distance = hv_distance(db_gpsrecord,last)

@@ -22,29 +22,7 @@
 	var wa_base_url = 'http://crane:8787/records/c-phone-a/'
 
 	var ot_icon = L.icon({
-		iconUrl: 'https://static.dev.dben.to/whereabouts/img/owntracks.png',
-		shadowUrl: 'https://static.dev.dben.to/whereabouts/img/marker-shadow.png',
-
-		iconSize:     [19, 24], // size of the icon
-		shadowSize:   [45, 45], // size of the shadow
-		iconAnchor:   [9, 24], // point of the icon which will correspond to marker's location
-		shadowAnchor: [12, 45],  // the same for the shadow
-		popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
-	});
-
-	var ha_icon = L.icon({
-		iconUrl: 'https://static.dev.dben.to/whereabouts/img/marker1.png',
-		shadowUrl: 'https://static.dev.dben.to/whereabouts/img/marker-shadow.png',
-
-		iconSize:     [17, 24], // size of the icon
-		shadowSize:   [45, 45], // size of the shadow
-		iconAnchor:   [8, 24], // point of the icon which will correspond to marker's location
-		shadowAnchor: [12, 45],  // the same for the shadow
-		popupAnchor:  [0, -29] // point from which the popup should open relative to the iconAnchor
-	});
-
-	var bunq_icon = L.icon({
-		iconUrl: 'https://static.dev.dben.to/whereabouts/img/dollar_marker.png',
+		iconUrl: 'https://static.dev.dben.to/whereabouts/img/pin.png',
 		shadowUrl: 'https://static.dev.dben.to/whereabouts/img/marker-shadow.png',
 
 		iconSize:     [24, 24], // size of the icon
@@ -54,12 +32,29 @@
 		popupAnchor:  [0, -20] // point from which the popup should open relative to the iconAnchor
 	});
 
+	var ha_icon = L.icon({
+		iconUrl: 'https://static.dev.dben.to/whereabouts/img/settings2.png',
+		shadowUrl: 'https://static.dev.dben.to/whereabouts/img/marker-shadow.png',
+
+		iconSize:     [12, 12], // size of the icon
+		shadowSize:   [24, 24], // size of the shadow
+		iconAnchor:   [6, 12], // point of the icon which will correspond to marker's location
+		shadowAnchor: [6, 24],  // the same for the shadow
+		popupAnchor:  [0, -10] // point from which the popup should open relative to the iconAnchor
+	});
+
+	var bunq_icon = L.icon({
+		iconUrl: 'https://static.dev.dben.to/whereabouts/img/gps.png',
+		shadowUrl: 'https://static.dev.dben.to/whereabouts/img/marker-shadow.png',
+
+		iconSize:     [20, 20], // size of the icon
+		shadowSize:   [40, 40], // size of the shadow
+		iconAnchor:   [10, 20], // point of the icon which will correspond to marker's location
+		shadowAnchor: [10, 40],  // the same for the shadow
+		popupAnchor:  [0, -18] // point from which the popup should open relative to the iconAnchor
+	});
+
 	var apps = [
-		{
-			'name': 'own-tracks/',
-			'icon': ot_icon,
-			'color': '#00CC9D'
-		},
 		{
 			'name': 'home-assist/',
 			'icon': ha_icon,
@@ -71,6 +66,12 @@
 			'icon': bunq_icon,
 			'color': null
 			//'color': '#FF3368'
+		},
+		{
+			'name': 'own-tracks/',
+			'icon': ot_icon,
+			//'color': '#FF3368'
+			'color': '#00CC9D'
 		}
 	];
 
@@ -85,7 +86,7 @@
 		.then(json => json.forEach(function(record) {
 		//Display Marker
 		L.marker([record.latitude,record.longitude], {icon: icon}).addTo(mymap)
-			.bindPopup("<b>"+record.device+" - "+record.datetime+"</b>");    
+			.bindPopup("<b>"+record.device+" - "+record.datetime+"</b><ul><li>app: "+record.app+"</li><li>distance: "+record.distance+"m</li><li>accuracy: "+record.accuracy+"</li><li>description: "+record.description+"</li></ul>");    
 		path.push([record.latitude,record.longitude]);
 		}))
 		.then(function(){
@@ -98,9 +99,10 @@
 
     //Use mapbox map tiles
 	L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoiY2FzdGVsIiwiYSI6ImNqcHpxcW5scDBkbzczd3Bsa2MwY3V4eHEifQ.-ZMEmuybMfcsdkVbWah0dw', {
-		maxZoom: 18,
+		maxZoom: 20,
 		attribution: 'Whereabouts - Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>, ' +
-			'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+			'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>, '+
+			'Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>',
 		id: 'mapbox/dark-v10',
 	}).addTo(mymap);
 
