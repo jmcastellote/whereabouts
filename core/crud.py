@@ -1,5 +1,6 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.future import select
 from sqlalchemy import asc, desc, and_
 
 from core.model.gps_record import GpsRecord
@@ -8,43 +9,62 @@ import core.haversine as haversine
 
 MIN_DISTANCE = 50
 
-def get_gpsrecord(db: Session, record_id: int):
-    return db.query(GpsRecord).filter(GpsRecord.id == record_id).first()
-
-def get_last_gpsrecord(db: Session, device: str, app: str):
-    return db.query(GpsRecord).filter(
-        and_(
-            GpsRecord.device == device, 
-            GpsRecord.app == app
+async def get_gpsrecord(db: AsyncSession, record_id: int):
+    result = await db.execute(
+        select(GpsRecord).filter(
+            GpsRecord.id == record_id
         )
-    ).order_by(GpsRecord.datetime.desc()).first()
+    )
+    return result.scalars().first()
 
-def get_gpsrecords_by_app(db: Session, device: str, app: str, limit: int = 600):
-    return db.query(GpsRecord).filter(
-        and_(
-            GpsRecord.device == device, 
-            GpsRecord.app == app
-        )
-    ).order_by(GpsRecord.datetime.desc()).limit(limit).all()
+async def get_last_gpsrecord(db: AsyncSession, device: str, app: str):
+    result = await db.execute(
+        select(GpsRecord).filter(
+            and_(
+                GpsRecord.device == device, 
+                GpsRecord.app == app
+            )
+        ).order_by(GpsRecord.datetime.desc()).limit(1)
+    )
+    return result.scalars().first()
 
-def get_gpsrecords_by_device(db: Session, device: str, limit: int = 100):
-    return db.query(GpsRecord).filter(
+async def get_gpsrecords_by_app(db: AsyncSession, device: str, app: str, limit: int = 600):
+    result = await db.execute(
+        select(GpsRecord).filter(
+            and_(
+                GpsRecord.device == device, 
+                GpsRecord.app == app
+            )
+        ).order_by(GpsRecord.datetime.desc()).limit(limit)
+    )
+    return result.scalars().all()
+
+async def get_gpsrecords_by_device(db: AsyncSession, device: str, limit: int = 100):
+    result = await db.execute(
+        select(GpsRecord).filter(
             GpsRecord.device == device 
-    ).order_by(GpsRecord.datetime.desc()).limit(limit).all()
+        ).order_by(GpsRecord.datetime.desc()).limit(limit).all()
+    )
+    return result.scalars().all()
 
-def get_gpsrecords(db: Session, limit: int = 100):
-    return db.query(GpsRecord).order_by(GpsRecord.datetime.desc()).limit(limit).all()
+async def get_gpsrecords(db: AsyncSession, limit: int = 100):
+    result = await db.execute(
+        select(GpsRecord).order_by(
+            GpsRecord.datetime.desc()
+        ).limit(limit)
+    )
+    return result.scalars().all()
 
-def create_gpsrecord(db: Session, gpsrecord: gps.GpsRecordCreate):
+async def create_gpsrecord(db: AsyncSession, gpsrecord: gps.GpsRecordCreate):
     db_gpsrecord = GpsRecord(**gpsrecord.dict())
-    last = get_last_gpsrecord(db, db_gpsrecord.device, db_gpsrecord.app)
+    last = await get_last_gpsrecord(db, db_gpsrecord.device, db_gpsrecord.app)
     distance = hv_distance(db_gpsrecord,last)
     db_gpsrecord.distance = distance
     if distance >= MIN_DISTANCE:
         try:
             db.add(db_gpsrecord)
-            db.commit()
-            db.refresh(db_gpsrecord)
+            await db.commit()
+            await db.refresh(db_gpsrecord)
             return db_gpsrecord
         except IntegrityError:
             print(f'record received for {gpsrecord.app} on {gpsrecord.datetime} but already existed')

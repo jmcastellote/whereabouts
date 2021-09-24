@@ -1,8 +1,6 @@
 from datetime import datetime
 import os, requests, json
-import core.crud, core.schemas as s
-from core.database import SessionLocal, engine
-from sqlalchemy.exc import IntegrityError
+import core.schemas as s
 
 token = os.environ.get('HA_TOKEN')
 
@@ -27,7 +25,6 @@ headers = {
 base_url = f'http://172.18.0.1:8123/api/states/'
 wa_url = f'http://172.18.0.1:8787/record/'
 
-db = SessionLocal()
 for device in devices:
     id = device['id']
     url = f'{base_url}{id}'
@@ -45,4 +42,3 @@ for device in devices:
         }
         r = requests.post(wa_url,headers=headers,json=record)
         print(f'record from {record["app"]} sent, status {r.status_code}')
-db.close()

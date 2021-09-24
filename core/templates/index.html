@@ -85,8 +85,10 @@
 		.then(res => res.json())
 		.then(json => json.forEach(function(record) {
 		//Display Marker
+		var date = new Date(record.datetime)
 		L.marker([record.latitude,record.longitude], {icon: icon}).addTo(mymap)
-			.bindPopup("<b>"+record.device+" - "+record.datetime+"</b><ul><li>app: "+record.app+"</li><li>distance: "+record.distance+"m</li><li>accuracy: "+record.accuracy+"</li><li>description: "+record.description+"</li></ul>");    
+			.bindPopup("<b>"+record.device+" - "+date.toLocaleString()+"</b><ul><li>app: "+record.app+"</li><li>distance: "+record.distance+"m</li><li>accuracy: "+record.accuracy+"</li><li>description: "+record.description+"</li></ul>");    
+			//.bindPopup("<b>"+record.device+" - "+record.datetime+"</b><ul><li>app: "+record.app+"</li><li>distance: "+record.distance+"m</li><li>accuracy: "+record.accuracy+"</li><li>description: "+record.description+"</li></ul>");    
 		path.push([record.latitude,record.longitude]);
 		}))
 		.then(function(){
