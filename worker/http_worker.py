@@ -41,3 +41,4 @@ for device in devices:
             'user': 'castel'
         }
         r = requests.post(wa_url,headers=headers,json=record)
+        print(f'record from {record["app"]} sent, status {r.status_code}')
