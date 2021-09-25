@@ -12,4 +12,10 @@ class Salty:
         return self.box.decrypt(
             encrypted_text,
             encoder=Base64Encoder
+        ).decode('utf-8')
+
+    async def encrypt (self, text: str) -> bytes:
+        return self.box.encrypt(
+            text.encode('utf-8'),
+            encoder=Base64Encoder
         )

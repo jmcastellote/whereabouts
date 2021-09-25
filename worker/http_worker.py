@@ -10,11 +10,11 @@ devices = [
         'app': 'home-assist',
         'id': 'device_tracker.c_phone_a',
     },
-    {
-        'device': 'c-phone-a',
-        'app': 'own-tracks',
-        'id': 'device_tracker.castel_cphone',
-    }
+    #{
+    #    'device': 'c-phone-a',
+    #    'app': 'own-tracks',
+    #    'id': 'device_tracker.castel_cphone',
+    #}
 ]
 headers = {
         'Authorization': f'Bearer {token}',
@@ -41,4 +41,3 @@ for device in devices:
             'user': 'castel'
         }
         r = requests.post(wa_url,headers=headers,json=record)
-        print(f'record from {record["app"]} sent, status {r.status_code}')

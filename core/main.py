@@ -1,4 +1,4 @@
-import os, json, dateparser
+import os, json, dateparser, aiohttp
 import asyncio
 from asyncio import Task
 from typing import List
@@ -31,15 +31,15 @@ async def index(request: Request):
 
 @app.get("/records/", response_model=List[gps.GpsRecord])
 async def get_all_records(limit: int = 500, db: AsyncSession = Depends(get_session)):
-        return await crud.get_gpsrecords(db, limit=limit)
+    return await crud.get_gpsrecords(db, limit=limit)
 
 @app.get("/records/{device}/", response_model=List[gps.GpsRecord])
 async def get_records_by_device(device: str = None, db: AsyncSession = Depends(get_session)):
-        return await crud.get_gpsrecords_by_device(db, device)
+    return await crud.get_gpsrecords_by_device(db, device)
 
 @app.get("/records/{device}/{app}/", response_model=List[gps.GpsRecord])
 async def get_records(device: str = None, app: str = None, db: AsyncSession = Depends(get_session)):
-        return await crud.get_gpsrecords_by_app(db, device, app)
+    return await crud.get_gpsrecords_by_app(db, device, app)
 
 @app.post("/record/", response_model=gps.GpsRecord)
 async def create_gps_record(
@@ -50,30 +50,78 @@ async def create_gps_record(
         raise HTTPException(status_code=409, detail="GPS Record already exists or is too close to last one")
     return record
 
-@app.post('/owntracks/{ot_url_path}', status_code=200)
-async def owntracks_record(encrypted_record: ot.OwntracksEncryptedRecordBase):
-    asyncio.create_task(
-        task_waiter(process_owntracks_record(encrypted_record.data))
-    )
-    return {}
+@app.post('/owntracks/309b5ffc2df9', status_code=200)
+async def owntracks_record(
+    encrypted_record: ot.OwntracksEncryptedRecordBase,
+    db: AsyncSession = Depends(get_session)
+):
+    raw_record = json.loads(await salty.decrypt(encrypted_record.data))
+    asyncio.create_task(save_owntracks_record(raw_record, db))
+    asyncio.create_task(forward_to_ha(encrypted_record.data))
+    return await build_ot_reply(raw_record)
 
-async def process_owntracks_record(encrypted_bytes: bytes):
-    dp_settings = {
-        'TIMEZONE': 'UTC', 
-        'RETURN_AS_TIMEZONE_AWARE': True
+async def build_ot_reply(raw_record: dict) -> dict:
+    reply = [{
+        '_type': 'location',
+        'lat': raw_record['lat'],
+        'lon': raw_record['lon'],
+        'tid': 'J',
+        'tst': raw_record['tst'] 
+    }]
+    return {
+        '_type': 'encrypted',
+        'data': await salty.encrypt(json.dumps(reply))
     }
-    raw_record = await salty.decrypt(encrypted_bytes)
+
+async def save_owntracks_record(raw_record: dict, db: AsyncSession = Depends(get_session)):
     try:
-        record = ot.OwntracksRecordBase(
-            **json.loads(raw_record.decode('utf-8'))
-        )
-        print (record)
-        print (f'timestamp: {dateparser.parse(str(record.tst), settings=dp_settings)}')
+        ot_record = ot.OwntracksRecordBase(**raw_record)
+        record = build_from_ot_record(ot_record)
+        await crud.create_gpsrecord(db=db, gpsrecord=record)
+        # This is needed when the session goes out of scope 
+        # (in this case is non awaited task)
+        # see tip under https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html#synopsis-core
+        await db.close()
     except ValidationError:
         print ('This one didnt like it')
         print (raw_record)
 
-async def task_waiter(task: Task):
-    await asyncio.sleep(3)
-    await task
-    print('done')
+def build_from_ot_record(record: ot.OwntracksRecordBase) -> gps.GpsRecordCreate:
+    date_settings = {
+        'TIMEZONE': 'UTC', 
+        'RETURN_AS_TIMEZONE_AWARE': True
+    }
+    attr_mapper = {
+        'lat': 'latitude',
+        'lon': 'longitude',
+        'alt': 'altitude',
+        'acc': 'accuracy',
+        'vac': 'vertical_accuracy',
+    }
+    gpsrecord = {
+        'datetime': dateparser.parse(str(record.tst), settings=date_settings),
+        'device': 'c-phone-a',
+        'app': 'own-tracks',
+        'user': 'castel'
+    }
+    for attr, value in record.dict().items():
+        if attr in attr_mapper:
+            gpsrecord[attr_mapper[attr]] = value
+
+    return gps.GpsRecordCreate(**gpsrecord)
+
+async def forward_to_ha(data: bytes):
+    url = 'http://172.18.0.1:8123/api/webhook/d6d5f6436567de9cab9273d4ce53329e49f8d1230cda82ccadb7e8dc6fd7f4af'
+    body = {
+        '_type': 'encrypted',
+        'data': data.decode('utf-8')
+    }
+    headers = {
+        'X-Limit-U': 'castel',
+        'X-Limit-D': 'cphone',
+    }
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.post(url, json=body) as resp:
+            r = await resp.json()
+            m = await salty.decrypt(r['data'])
+            print ('message forwarded to home assistant')
