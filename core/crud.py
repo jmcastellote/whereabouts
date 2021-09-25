@@ -69,7 +69,7 @@ async def create_gpsrecord(db: AsyncSession, gpsrecord: gps.GpsRecordCreate):
         except IntegrityError:
             print(f'record received for {gpsrecord.app} on {gpsrecord.datetime} but already existed')
     else:
-        print(f'skipping record for {gpsrecord.app}, is too close from last one ({distance}m, acc: {gpsrecord.accuracy})')
+        print(f'skipping record for {gpsrecord.app}, is too close from last one ({"{0:.2f}".format(distance)}m, acc: {gpsrecord.accuracy})')
 
 def hv_distance(gps_record_1: GpsRecord, gps_record_2: GpsRecord) -> float:
     if not gps_record_1 or not gps_record_2:

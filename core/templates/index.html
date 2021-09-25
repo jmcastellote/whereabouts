@@ -7,6 +7,7 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
+	<link rel="shortcut icon" href="https://static.dev.dben.to/whereabouts/img/mobile-phone.png" />
     <!--Load Leaflet stuff-->
 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
 	<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
@@ -19,7 +20,7 @@
 
 <!--Manage the map-->
 <script>
-	var wa_base_url = 'http://crane:8787/records/c-phone-a/'
+	var wa_base_url = '/records/c-phone-a/'
 
 	var ot_icon = L.icon({
 		iconUrl: 'https://static.dev.dben.to/whereabouts/img/pin.png',
@@ -87,7 +88,7 @@
 		//Display Marker
 		var date = new Date(record.datetime)
 		L.marker([record.latitude,record.longitude], {icon: icon}).addTo(mymap)
-			.bindPopup("<b>"+record.device+" - "+date.toLocaleString()+"</b><ul><li>app: "+record.app+"</li><li>distance: "+record.distance+"m</li><li>accuracy: "+record.accuracy+"</li><li>description: "+record.description+"</li></ul>");    
+			.bindPopup("<b>"+record.device+" - "+date.toLocaleString()+"</b><ul><li>app: "+record.app+"</li><li>distance: "+record.distance.toFixed(2)+"m</li><li>accuracy: "+record.accuracy+"</li><li>description: "+record.description+"</li></ul>");    
 			//.bindPopup("<b>"+record.device+" - "+record.datetime+"</b><ul><li>app: "+record.app+"</li><li>distance: "+record.distance+"m</li><li>accuracy: "+record.accuracy+"</li><li>description: "+record.description+"</li></ul>");    
 		path.push([record.latitude,record.longitude]);
 		}))

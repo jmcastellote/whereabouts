@@ -124,4 +124,4 @@ async def forward_to_ha(data: bytes):
         async with session.post(url, json=body) as resp:
             r = await resp.json()
             m = await salty.decrypt(r['data'])
-            print ('message forwarded to home assistant')
+            print (f'message forwarded to home assistant, result {resp.status}')
