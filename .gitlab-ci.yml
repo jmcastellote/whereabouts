@@ -1,0 +1,15 @@
+stages:
+- test
+#- build
+#- deploy
+
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
+code_quality:
+  variables:
+    REPORT_FORMAT: html
+  artifacts:
+    paths: [gl-code-quality-report.html]
+  tags:
+  - quality
