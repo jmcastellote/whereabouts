@@ -34,13 +34,13 @@ for device in devices:
     if response.status_code == 200:
         data = response.json()
         record = s.GpsRecordCreate(
-            datetime = data['last_changed'],
-            latitude = data['attributes']['latitude'],
-            longitude = data['attributes']['longitude'],
-            accuracy = data['attributes']['gps_accuracy'],
-            device = device['device'],
-            app = device['app'],
-            user = 'castel'
+            datetime=data['last_changed'],
+            latitude=data['attributes']['latitude'],
+            longitude=data['attributes']['longitude'],
+            accuracy=data['attributes']['gps_accuracy'],
+            device=device['device'],
+            app=device['app'],
+            user='castel'
         )
         try:
             r = core.crud.create_gpsrecord(db,record)

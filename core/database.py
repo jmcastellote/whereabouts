@@ -21,7 +21,7 @@ async def get_session() -> AsyncSession:
     async with async_session() as session:
         yield session
 
-#prepare for garbage collector 
+#prepare for garbage collector
 # see tip under https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html#synopsis-core
 async def dispose():
     await engine.dispose()

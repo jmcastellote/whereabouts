@@ -1,7 +1,7 @@
 fastapi[all]
-psycopg2
+#psycopg2
 typing
-sqlalchemy
+sqlalchemy[asyncio]
 pydantic
 uvicorn
 alembic

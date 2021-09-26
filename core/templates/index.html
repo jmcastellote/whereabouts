@@ -76,7 +76,6 @@
 		}
 	];
 
-	//L.Icon.Default.prototype.options.iconUrl = 'https://static.dev.dben.to/whereabouts/img/owntracks.png';
     //Initialize map
 	var mymap = L.map('mapid').setView([10, 40], 3);
 
@@ -89,7 +88,6 @@
 		var date = new Date(record.datetime)
 		L.marker([record.latitude,record.longitude], {icon: icon}).addTo(mymap)
 			.bindPopup("<b>"+record.device+" - "+date.toLocaleString()+"</b><ul><li>app: "+record.app+"</li><li>distance: "+record.distance.toFixed(2)+"m</li><li>accuracy: "+record.accuracy+"</li><li>description: "+record.description+"</li></ul>");    
-			//.bindPopup("<b>"+record.device+" - "+record.datetime+"</b><ul><li>app: "+record.app+"</li><li>distance: "+record.distance+"m</li><li>accuracy: "+record.accuracy+"</li><li>description: "+record.description+"</li></ul>");    
 		path.push([record.latitude,record.longitude]);
 		}))
 		.then(function(){
