@@ -31,7 +31,7 @@ async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/records/", response_model=List[gps.GpsRecord])
-async def get_all_records(limit: int = 500, db_session: AsyncSession = Depends(get_session)):
+async def get_all_records(limit: int = 1000, db_session: AsyncSession = Depends(get_session)):
     return await crud.get_gpsrecords(db_session, limit=limit)
 
 @app.get("/records/{device}/", response_model=List[gps.GpsRecord])
@@ -40,9 +40,10 @@ async def get_records_by_device(
 ):
     return await crud.get_gpsrecords_by_device(db_session, device)
 
-@app.get("/records/{device}/{app}/", response_model=List[gps.GpsRecord])
+@app.get("/records/{device}/{tracker_app}/", response_model=List[gps.GpsRecord])
 async def get_records(
-    device: str = None, tracker_app: str = None,
+    device: str = None, 
+    tracker_app: str = None,
     db_session: AsyncSession = Depends(get_session)
 ):
     return await crud.get_gpsrecords_by_app(db_session, device, tracker_app)

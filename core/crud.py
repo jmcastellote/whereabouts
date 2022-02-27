@@ -34,7 +34,7 @@ async def get_last_gpsrecord(db_session: AsyncSession, device: str, app: str):
 async def get_gpsrecords_by_app(
     db_session: AsyncSession, device: str,
     app: str,
-    limit: int = 600
+    limit: int = 1000
 ):
     result = await db_session.execute(
         select(GpsRecord).filter(
@@ -47,16 +47,16 @@ async def get_gpsrecords_by_app(
     return result.scalars().all()
 
 
-async def get_gpsrecords_by_device(db_session: AsyncSession, device: str, limit: int = 100):
+async def get_gpsrecords_by_device(db_session: AsyncSession, device: str, limit: int = 1000):
     result = await db_session.execute(
         select(GpsRecord).filter(
             GpsRecord.device == device
-        ).order_by(GpsRecord.datetime.desc()).limit(limit).all()
+        ).order_by(GpsRecord.datetime.desc()).limit(limit)
     )
     return result.scalars().all()
 
 
-async def get_gpsrecords(db_session: AsyncSession, limit: int = 100):
+async def get_gpsrecords(db_session: AsyncSession, limit: int = 1000):
     result = await db_session.execute(
         select(GpsRecord).order_by(
             GpsRecord.datetime.desc()
