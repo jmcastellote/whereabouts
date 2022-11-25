@@ -2,7 +2,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, F
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import null
 
-from core.database import Base
+from core.model.base import Base
 
 class GpsTracker(Base):
 
@@ -19,7 +19,6 @@ class GpsTracker(Base):
     description = Column(String,nullable=True)
     tracker_bearer = Column(String(length=128), default='castel')
     distance_tracked = Column(Float())
+    url_id = Column(String(length=16), index=True, unique=True)
 
-    #UniqueConstraint('datetime','device','app','user', name='unique_device_record')
-    #This needs to be executed manually
-    Index('device_records','datetime','device','app','user', unique=True)
+Index('unique_tracker', GpsTracker.device, GpsTracker.app, GpsTracker.tracker_bearer, unique=True)

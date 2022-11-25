@@ -1,6 +1,5 @@
 import os
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -26,4 +25,3 @@ async def get_session() -> AsyncSession:
 async def dispose():
     await engine.dispose()
 
-Base = declarative_base()

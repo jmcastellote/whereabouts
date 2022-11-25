@@ -32,7 +32,8 @@ async def get_last_gpsrecord(db_session: AsyncSession, device: str, app: str):
 
 
 async def get_gpsrecords_by_app(
-    db_session: AsyncSession, device: str,
+    db_session: AsyncSession,
+    device: str,
     app: str,
     limit: int = 1000
 ):

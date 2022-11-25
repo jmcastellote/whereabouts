@@ -17,8 +17,6 @@ import core.schemas.gpsrecord as gps
 import core.schemas.owntracks as ot
 from core.database import get_session
 
-#needed only once
-#models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -66,9 +64,10 @@ async def owntracks_record(
     db_session: AsyncSession = Depends(get_session)
 ):
     raw_record = json.loads(await salty.decrypt(encrypted_record.data))
+    print(raw_record)
     asyncio.create_task(save_owntracks_record(raw_record, db_session))
     if raw_record['_type'] == 'location' or raw_record['_type'] == 'transition':
-        asyncio.create_task(forward_to_ha(encrypted_record.data))
+        #asyncio.create_task(forward_to_ha(encrypted_record.data))
         return await build_ot_reply(raw_record)
     return []
 
@@ -85,6 +84,7 @@ async def build_ot_reply(raw_record: dict) -> dict:
     #    'action': 'waypoints',
     #    #'content': '<b style="color: green">whereabouts is synchronized</b>'
     #})
+    print(reply)
     return {
         '_type': 'encrypted',
         'data': await salty.encrypt(json.dumps(reply))
