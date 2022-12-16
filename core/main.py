@@ -4,9 +4,11 @@ import os
 import json
 import dateparser
 import aiohttp
+import logging
 
-from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.classes.salty import Salty
 from core import crud
 import core.schemas.gpsrecord as gps
+import core.schemas.gpstracker as gps_tracker
 import core.schemas.owntracks as ot
 from core.database import get_session
 
@@ -23,6 +26,16 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 salty = Salty(os.environ.get('OT_SEED'))
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    '''Make sure invalid requests content is logged and define error output and logging format'''
+    exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')
+    logging.error(f"{request}: {exc_str}")
+    content = {'error': 'Validation Error', 'message': exc_str, 'data': None}
+    return JSONResponse(content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -58,6 +71,30 @@ async def create_gps_record(
         )
     return record
 
+@app.post("/tracker/")
+async def create_gps_record(
+    gpstracker: gps_tracker.GpsTrackerCreate, db_session: AsyncSession = Depends(get_session)
+):
+    record = await crud.create_gpstracker(db_session=db_session, gpstracker=gpstracker)
+    if not record:
+        raise HTTPException(
+            status_code=409,
+            detail="Tracker already exists"
+        )
+    return record
+
+@app.put("/tracker/")
+async def update_gps_record(
+    gpstracker: gps_tracker.GpsTrackerUpdate, db_session: AsyncSession = Depends(get_session)
+):
+    record = await crud.update_gpstracker(db_session=db_session, gpstracker=gpstracker)
+    if not record:
+        raise HTTPException(
+            status_code=409,
+            detail="Tracker already exists"
+        )
+    return record
+
 @app.post('/owntracks/309b5ffc2df9', status_code=200)
 async def owntracks_record(
     encrypted_record: ot.OwntracksEncryptedRecordBase,
@@ -79,6 +116,7 @@ async def build_ot_reply(raw_record: dict) -> dict:
         'tid': 'J',
         'tst': raw_record['tst']
     }]
+    # Display messages in the app
     #reply.append({
     #    '_type': 'cmd',
     #    'action': 'waypoints',
