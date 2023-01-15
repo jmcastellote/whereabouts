@@ -41,15 +41,18 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+
 @app.get("/records/", response_model=List[gps.GpsRecord])
 async def get_all_records(limit: int = 1000, db_session: AsyncSession = Depends(get_session)):
     return await crud.get_gpsrecords(db_session, limit=limit)
+
 
 @app.get("/records/{device}/", response_model=List[gps.GpsRecord])
 async def get_records_by_device(
     device: str = None, db_session: AsyncSession = Depends(get_session)
 ):
     return await crud.get_gpsrecords_by_device(db_session, device)
+
 
 @app.get("/records/{device}/{tracker_app}/", response_model=List[gps.GpsRecord])
 async def get_records(
@@ -58,6 +61,7 @@ async def get_records(
     db_session: AsyncSession = Depends(get_session)
 ):
     return await crud.get_gpsrecords_by_app(db_session, device, tracker_app)
+
 
 @app.post("/record/", response_model=gps.GpsRecord)
 async def create_gps_record(
@@ -71,8 +75,9 @@ async def create_gps_record(
         )
     return record
 
+
 @app.post("/tracker/")
-async def create_gps_record(
+async def create_tracker(
     gpstracker: gps_tracker.GpsTrackerCreate, db_session: AsyncSession = Depends(get_session)
 ):
     record = await crud.create_gpstracker(db_session=db_session, gpstracker=gpstracker)
@@ -83,17 +88,19 @@ async def create_gps_record(
         )
     return record
 
+
 @app.put("/tracker/")
-async def update_gps_record(
+async def update_tracker(
     gpstracker: gps_tracker.GpsTrackerUpdate, db_session: AsyncSession = Depends(get_session)
 ):
     record = await crud.update_gpstracker(db_session=db_session, gpstracker=gpstracker)
     if not record:
         raise HTTPException(
-            status_code=409,
-            detail="Tracker already exists"
+            status_code=404,
+            detail="Tracker not found"
         )
     return record
+
 
 @app.post('/owntracks/309b5ffc2df9', status_code=200)
 async def owntracks_record(
@@ -107,6 +114,7 @@ async def owntracks_record(
         #asyncio.create_task(forward_to_ha(encrypted_record.data))
         return await build_ot_reply(raw_record)
     return []
+
 
 async def build_ot_reply(raw_record: dict) -> dict:
     reply = [{

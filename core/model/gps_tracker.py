@@ -1,6 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float, UniqueConstraint, Index, JSON
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql.expression import null
+from sqlalchemy import Boolean, Column, Integer, String, DateTime, Float, Index, JSON
 
 from core.model.base import Base
 
@@ -17,8 +15,10 @@ class GpsTracker(Base):
     icon_config = Column(JSON())
     display_path = Column(Boolean())
     description = Column(String,nullable=True)
-    tracker_bearer = Column(String(length=128), default='castel')
+    tracker_bearer = Column(String(length=128), default='castel', index=True)
     distance_tracked = Column(Float())
     url_id = Column(String(length=16), index=True, unique=True)
+    app_config = Column(JSON())
+    active = Column(Boolean(), default=True)
 
 Index('unique_tracker', GpsTracker.device, GpsTracker.app, GpsTracker.tracker_bearer, unique=True)

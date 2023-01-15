@@ -1,0 +1,13 @@
+{
+  "name": "bunq",
+  "device": "c-phone-9",
+  "app": "bunq",
+  "icon": "/tmp/test.png",
+  "icon_config": {"test": 1},
+  "display_path": true,
+  "description": "bunq app on c-phone-9",
+  "tracker_bearer": "castel",
+  "url_id": "cphone-9_bunq",
+  "app_config": {"type": "generic"},
+  "active": true
+}

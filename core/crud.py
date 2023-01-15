@@ -10,6 +10,7 @@ import core.schemas.gpstracker as gps_tracker
 from core import haversine
 
 MIN_DISTANCE = 50
+DEFAULT_GPS_RECORDS_LIMIT = 1000
 
 
 async def get_gpsrecord(db_session: AsyncSession, record_id: int):
@@ -37,7 +38,7 @@ async def get_gpsrecords_by_app(
     db_session: AsyncSession,
     device: str,
     app: str,
-    limit: int = 1000
+    limit: int = DEFAULT_GPS_RECORDS_LIMIT
 ):
     result = await db_session.execute(
         select(GpsRecord).filter(
@@ -50,7 +51,7 @@ async def get_gpsrecords_by_app(
     return result.scalars().all()
 
 
-async def get_gpsrecords_by_device(db_session: AsyncSession, device: str, limit: int = 1000):
+async def get_gpsrecords_by_device(db_session: AsyncSession, device: str, limit: int = DEFAULT_GPS_RECORDS_LIMIT):
     result = await db_session.execute(
         select(GpsRecord).filter(
             GpsRecord.device == device
@@ -59,7 +60,7 @@ async def get_gpsrecords_by_device(db_session: AsyncSession, device: str, limit:
     return result.scalars().all()
 
 
-async def get_gpsrecords(db_session: AsyncSession, limit: int = 1000):
+async def get_gpsrecords(db_session: AsyncSession, limit: int = DEFAULT_GPS_RECORDS_LIMIT):
     result = await db_session.execute(
         select(GpsRecord).order_by(
             GpsRecord.datetime.desc()
@@ -118,6 +119,14 @@ async def update_gpstracker(db_session: AsyncSession, gpstracker: gps_tracker.Gp
         )
     )).scalars().first()
     if db_gpstracker:
+        db_gpstracker.name = gpstracker.name
+        db_gpstracker.icon = gpstracker.icon
+        db_gpstracker.icon_config = gpstracker.icon_config
+        db_gpstracker.display_path = gpstracker.display_path
+        db_gpstracker.description = gpstracker.description
+        db_gpstracker.app_config = gpstracker.app_config
+        db_gpstracker.active = gpstracker.active
+        db_gpstracker.url_id = gpstracker.url_id
         db_session.add(db_gpstracker)
         await db_session.commit()
         await db_session.refresh(db_gpstracker)
