@@ -18,7 +18,7 @@ from core import crud
 import core.schemas.gpsrecord as gps
 import core.schemas.gpstracker as gps_tracker
 import core.schemas.owntracks as ot
-from core.database import get_session
+from core.database import get_session, async_session
 
 
 app = FastAPI()
@@ -63,22 +63,30 @@ async def get_records(
     return await crud.get_gpsrecords_by_app(db_session, device, tracker_app)
 
 
-@app.post("/record/", response_model=gps.GpsRecord)
+@app.post("/record/", response_model=gps.GpsRecord, status_code=201)
 async def create_gps_record(
     gpsrecord: gps.GpsRecordCreate, db_session: AsyncSession = Depends(get_session)
 ):
-    record = await crud.create_gpsrecord(db_session=db_session, gpsrecord=gpsrecord)
-    if not record:
-        raise HTTPException(
-            status_code=409,
-            detail="GPS Record already exists or is too close to last one"
-        )
-    return record
+    #check if tracker exists
+    gps_tracker = await crud.get_gpstracker(db_session=db_session, device=gpsrecord.device, app=gpsrecord.app, user=gpsrecord.user)
+    if gps_tracker:
+        record = await crud.create_gpsrecord(db_session=db_session, gpsrecord=gpsrecord)
+        if not record:
+            raise HTTPException(
+                status_code=409,
+                detail="GPS Record already exists or is too close to last one"
+            )
+        return record
+    raise HTTPException(
+        status_code=409,
+        detail="Associated GPS Tracker not found"
+    )
 
 
-@app.post("/tracker/")
+@app.post("/tracker/", response_model=gps_tracker.GpsTracker, status_code=201)
 async def create_tracker(
-    gpstracker: gps_tracker.GpsTrackerCreate, db_session: AsyncSession = Depends(get_session)
+    gpstracker: gps_tracker.GpsTrackerCreate,
+    db_session: AsyncSession = Depends(get_session)
 ):
     record = await crud.create_gpstracker(db_session=db_session, gpstracker=gpstracker)
     if not record:
@@ -89,31 +97,40 @@ async def create_tracker(
     return record
 
 
-@app.put("/tracker/")
+@app.put("/tracker/", response_model=gps_tracker.GpsTracker)
 async def update_tracker(
-    gpstracker: gps_tracker.GpsTrackerUpdate, db_session: AsyncSession = Depends(get_session)
+    gpstracker: gps_tracker.GpsTrackerUpdate,
+    db_session: AsyncSession = Depends(get_session)
 ):
     record = await crud.update_gpstracker(db_session=db_session, gpstracker=gpstracker)
     if not record:
         raise HTTPException(
-            status_code=404,
+            status_code=422,
             detail="Tracker not found"
         )
     return record
 
 
-@app.post('/owntracks/309b5ffc2df9', status_code=200)
+@app.post('/owntracks/{url_id}/', response_model=dict, status_code=200)
 async def owntracks_record(
     encrypted_record: ot.OwntracksEncryptedRecordBase,
-    db_session: AsyncSession = Depends(get_session)
+    db_session: AsyncSession = Depends(get_session),
+    url_id: str = None
 ):
-    raw_record = json.loads(await salty.decrypt(encrypted_record.data))
-    print(raw_record)
-    asyncio.create_task(save_owntracks_record(raw_record, db_session))
-    if raw_record['_type'] == 'location' or raw_record['_type'] == 'transition':
-        #asyncio.create_task(forward_to_ha(encrypted_record.data))
-        return await build_ot_reply(raw_record)
-    return []
+    # check it's a known owntracks tracker (by checking the url_id)
+    gps_tracker = await crud.get_gpstracker_by_url_id(db_session=db_session,url_id=url_id)
+    if gps_tracker:
+        raw_record = json.loads(await salty.decrypt(encrypted_record.data))
+        print(raw_record)
+        asyncio.create_task(save_owntracks_record(raw_record=raw_record, gpstracker=gps_tracker))
+        if raw_record['_type'] == 'location' or raw_record['_type'] == 'transition':
+            #asyncio.create_task(forward_to_ha(encrypted_record.data))
+            return await build_ot_reply(raw_record)
+        return []
+    raise HTTPException(
+        status_code=422,
+        detail="Tracker not found"
+    )
 
 
 async def build_ot_reply(raw_record: dict) -> dict:
@@ -136,20 +153,16 @@ async def build_ot_reply(raw_record: dict) -> dict:
         'data': await salty.encrypt(json.dumps(reply))
     }
 
-async def save_owntracks_record(raw_record: dict, db_session: AsyncSession = Depends(get_session)):
-    try:
-        ot_record = ot.OwntracksRecordBase(**raw_record)
-        record = build_from_ot_record(ot_record)
-        await crud.create_gpsrecord(db_session=db_session, gpsrecord=record)
-        # This is needed when the session goes out of scope
-        # (in this case is non awaited task)
-        # see tip under https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html#synopsis-core
-        await db_session.close()
-    except ValidationError:
-        print ('This one didnt like it')
-        print (raw_record)
 
-def build_from_ot_record(record: ot.OwntracksRecordBase) -> gps.GpsRecordCreate:
+async def save_owntracks_record(raw_record: dict, gpstracker: gps_tracker.GpsTracker) -> None:
+    ot_record = ot.OwntracksRecordBase(**raw_record)
+    record = build_from_ot_record(ot_record, gpstracker)
+    # because this query is nearly concurrent, it needs its own session
+    async with async_session() as db_session:
+        await crud.create_gpsrecord(db_session=db_session, gpsrecord=record)
+
+
+def build_from_ot_record(record: ot.OwntracksRecordBase, gpstracker: gps_tracker.GpsTracker) -> gps.GpsRecordCreate:
     date_settings = {
         'TIMEZONE': 'UTC',
         'RETURN_AS_TIMEZONE_AWARE': True
@@ -163,9 +176,9 @@ def build_from_ot_record(record: ot.OwntracksRecordBase) -> gps.GpsRecordCreate:
     }
     gpsrecord = {
         'datetime': dateparser.parse(str(record.tst), settings=date_settings),
-        'device': 'c-phone-a',
-        'app': 'own-tracks',
-        'user': 'castel'
+        'device': gpstracker.device,
+        'app': gpstracker.app,
+        'user': gpstracker.tracker_bearer
     }
     for attr, value in record.dict().items():
         if attr in attr_mapper:

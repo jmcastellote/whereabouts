@@ -93,8 +93,33 @@ async def create_gpsrecord(db_session: AsyncSession, gpsrecord: gps.GpsRecordCre
             f' skipping record for {gpsrecord.app}, is too close from last one ({distance:.2f}m, acc: {gpsrecord.accuracy})'
         )
 
+###########################
+### GpsTracker crud ops ###
+###########################
 
-### GpsTracker crud ops
+
+async def get_gpstracker(db_session: AsyncSession, device: str, app: str, user: str):
+    result = (await db_session.execute(
+        select(GpsTracker).filter(
+            GpsTracker.device == device,
+            GpsTracker.app == app,
+            GpsTracker.tracker_bearer == user,
+        )
+    )).scalars().all()
+    if len(result) > 0:
+        return result[0]
+    return None
+
+
+async def get_gpstracker_by_url_id(db_session: AsyncSession, url_id: str):
+    result = (await db_session.execute(
+        select(GpsTracker).filter(
+            GpsTracker.url_id == url_id,
+        )
+    )).scalars().all()
+    if len(result) > 0:
+        return result[0]
+    return None
 
 
 async def create_gpstracker(db_session: AsyncSession, gpstracker: gps_tracker.GpsTrackerCreate):
