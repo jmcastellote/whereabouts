@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.classes.salty import Salty
 from core import crud
 import core.schemas.gpsrecord as gps
-import core.schemas.gpstracker as gps_tracker
+import core.schemas.gpstracker as gpstracker
 import core.schemas.owntracks as ot
 from core.database import get_session, async_session
 
@@ -83,9 +83,9 @@ async def create_gps_record(
     )
 
 
-@app.post("/tracker/", response_model=gps_tracker.GpsTracker, status_code=201)
+@app.post("/tracker/", response_model=gpstracker.GpsTracker, status_code=201)
 async def create_tracker(
-    gpstracker: gps_tracker.GpsTrackerCreate,
+    gpstracker: gpstracker.GpsTrackerCreate,
     db_session: AsyncSession = Depends(get_session)
 ):
     record = await crud.create_gpstracker(db_session=db_session, gpstracker=gpstracker)
@@ -97,9 +97,9 @@ async def create_tracker(
     return record
 
 
-@app.put("/tracker/", response_model=gps_tracker.GpsTracker)
+@app.put("/tracker/", response_model=gpstracker.GpsTracker)
 async def update_tracker(
-    gpstracker: gps_tracker.GpsTrackerUpdate,
+    gpstracker: gpstracker.GpsTrackerUpdate,
     db_session: AsyncSession = Depends(get_session)
 ):
     record = await crud.update_gpstracker(db_session=db_session, gpstracker=gpstracker)
@@ -117,7 +117,7 @@ async def owntracks_record(
     db_session: AsyncSession = Depends(get_session),
     url_id: str = None
 ):
-    # check it's a known owntracks tracker (by checking the url_id)
+    # check if it's a known owntracks tracker (by checking the url_id)
     gps_tracker = await crud.get_gpstracker_by_url_id(db_session=db_session,url_id=url_id)
     if gps_tracker:
         raw_record = json.loads(await salty.decrypt(encrypted_record.data))
@@ -154,7 +154,7 @@ async def build_ot_reply(raw_record: dict) -> dict:
     }
 
 
-async def save_owntracks_record(raw_record: dict, gpstracker: gps_tracker.GpsTracker) -> None:
+async def save_owntracks_record(raw_record: dict, gpstracker: gpstracker.GpsTracker) -> None:
     ot_record = ot.OwntracksRecordBase(**raw_record)
     record = build_from_ot_record(ot_record, gpstracker)
     # because this query is nearly concurrent, it needs its own session
@@ -162,7 +162,7 @@ async def save_owntracks_record(raw_record: dict, gpstracker: gps_tracker.GpsTra
         await crud.create_gpsrecord(db_session=db_session, gpsrecord=record)
 
 
-def build_from_ot_record(record: ot.OwntracksRecordBase, gpstracker: gps_tracker.GpsTracker) -> gps.GpsRecordCreate:
+def build_from_ot_record(record: ot.OwntracksRecordBase, gpstracker: gpstracker.GpsTracker) -> gps.GpsRecordCreate:
     date_settings = {
         'TIMEZONE': 'UTC',
         'RETURN_AS_TIMEZONE_AWARE': True
