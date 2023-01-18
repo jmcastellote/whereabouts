@@ -124,7 +124,7 @@ async def owntracks_record(
         print(raw_record)
         asyncio.create_task(save_owntracks_record(raw_record=raw_record, gpstracker=gps_tracker))
         if raw_record['_type'] == 'location' or raw_record['_type'] == 'transition':
-            #asyncio.create_task(forward_to_ha(encrypted_record.data))
+            asyncio.create_task(forward_to_ha(encrypted_record.data))
             return await build_ot_reply(raw_record)
         return []
     raise HTTPException(
@@ -187,7 +187,7 @@ def build_from_ot_record(record: ot.OwntracksRecordBase, gpstracker: gpstracker.
     return gps.GpsRecordCreate(**gpsrecord)
 
 async def forward_to_ha(data: bytes):
-    url = 'http://172.18.0.1:8123/api/webhook/d6d5f6436567de9cab9273d4ce53329e49f8d1230cda82ccadb7e8dc6fd7f4af'
+    url = 'http://192.168.1.62:8123/api/webhook/60b72d6e40d509d93948a0df4e4bbc4519f994517fa8e6fdd503b90b577a7f2f'
     body = {
         '_type': 'encrypted',
         'data': data.decode('utf-8')
@@ -198,5 +198,4 @@ async def forward_to_ha(data: bytes):
     }
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.post(url, json=body) as resp:
-            #r = await resp.json()
             print (f'message forwarded to home assistant, result {resp.status}')
