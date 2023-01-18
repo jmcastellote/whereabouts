@@ -1,5 +1,6 @@
+import asyncio
 from datetime import datetime
-import os, requests, json
+import os, aiohttp, json
 import core.schemas as s
 
 token = os.environ.get('HA_TOKEN')
@@ -25,20 +26,26 @@ headers = {
 base_url = f'http://172.18.0.1:8123/api/states/'
 wa_url = f'http://172.18.0.1:8787/record/'
 
-for device in devices:
-    id = device['id']
-    url = f'{base_url}{id}'
-    response = requests.get(url,headers=headers)
-    if response.status_code == 200:
-        data = response.json()
-        record = {
-            'datetime': data['last_changed'],
-            'latitude': data['attributes']['latitude'],
-            'longitude': data['attributes']['longitude'],
-            'accuracy': data['attributes']['gps_accuracy'],
-            'device': device['device'],
-            'app': device['app'],
-            'user': 'castel'
-        }
-        r = requests.post(wa_url,headers=headers,json=record)
-        print(f'record from {record["app"]} sent, status {r.status_code}')
+async def fetch_gps_records_from_ha() -> None:
+    for device in devices:
+        id = device['id']
+        url = f'{base_url}{id}'
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get(url) as resp:
+                r = await resp.json()
+        response = requests.get(url,headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            record = {
+                'datetime': data['last_changed'],
+                'latitude': data['attributes']['latitude'],
+                'longitude': data['attributes']['longitude'],
+                'accuracy': data['attributes']['gps_accuracy'],
+                'device': device['device'],
+                'app': device['app'],
+                'user': 'castel'
+            }
+            r = requests.post(wa_url,headers=headers,json=record)
+            print(f'record from {record["app"]} sent, status {r.status_code}')
+
+asyncio.run(fetch_gps_records_from_ha())
