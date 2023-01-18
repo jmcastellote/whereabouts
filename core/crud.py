@@ -22,12 +22,13 @@ async def get_gpsrecord(db_session: AsyncSession, record_id: int):
     return result.scalars().first()
 
 
-async def get_last_gpsrecord(db_session: AsyncSession, device: str, app: str):
+async def get_last_gpsrecord(db_session: AsyncSession, device: str, app: str, user: str):
     result = await db_session.execute(
         select(GpsRecord).filter(
             and_(
                 GpsRecord.device == device,
-                GpsRecord.app == app
+                GpsRecord.app == app,
+                GpsRecord.user == user
             )
         ).order_by(GpsRecord.datetime.desc()).limit(1)
     )
@@ -74,7 +75,8 @@ async def create_gpsrecord(db_session: AsyncSession, gpsrecord: gps.GpsRecordCre
     last = await get_last_gpsrecord(
         db_session,
         db_session_gpsrecord.device,
-        db_session_gpsrecord.app
+        db_session_gpsrecord.app,
+        db_session_gpsrecord.user,
     )
     distance = hv_distance(db_session_gpsrecord, last)
     db_session_gpsrecord.distance = distance
