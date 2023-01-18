@@ -6,9 +6,9 @@ token = os.environ.get('HA_TOKEN')
 
 devices = [
     {
-        'device': 'c-phone-a',
-        'app': 'home-assist',
-        'id': 'device_tracker.c_phone_a',
+        'device': 'c-phone-9',
+        'app': 'home-assistant',
+        'id': 'device_tracker.c_phone_9',
     },
     #{
     #    'device': 'c-phone-a',

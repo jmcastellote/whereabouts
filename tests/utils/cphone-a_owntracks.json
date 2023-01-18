@@ -1,0 +1,13 @@
+{
+  "name": "owntracks c-phone-a",
+  "device": "c-phone-a",
+  "app": "owntracks",
+  "icon": "/tmp/test.png",
+  "icon_config": {"test": 1},
+  "display_path": true,
+  "description": "owntracks app on c-phone-a",
+  "tracker_bearer": "castel",
+  "url_id": "309b5ffc2df9",
+  "app_config": {"type": "owntracks"},
+  "active": false
+}

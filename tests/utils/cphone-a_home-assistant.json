@@ -1,0 +1,13 @@
+{
+  "name": "Home Assistant c-phone-a",
+  "device": "c-phone-a",
+  "app": "home-assistant",
+  "icon": "/tmp/test.png",
+  "icon_config": {"test": 1},
+  "display_path": true,
+  "description": "home-assistant app on c-phone-a",
+  "tracker_bearer": "castel",
+  "url_id": "cphone-a_ha",
+  "app_config": {"type": "home-assistant"},
+  "active": false
+}
