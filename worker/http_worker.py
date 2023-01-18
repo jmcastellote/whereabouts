@@ -47,7 +47,7 @@ async def fetch_gps_records_from_ha() -> None:
             }
             async with aiohttp.ClientSession(headers=headers) as session:
                 async with session.post(url, json=record) as resp:
-                    r = resp.status
-            print(f'record from {record["app"]} sent, status {r.status}')
+                    status = resp.status
+            print(f'record from {record["app"]} sent, status {status}')
 
 asyncio.run(fetch_gps_records_from_ha())
