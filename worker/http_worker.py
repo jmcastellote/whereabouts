@@ -46,7 +46,7 @@ async def fetch_gps_records_from_ha() -> None:
                 'user': 'castel'
             }
             async with aiohttp.ClientSession(headers=headers) as session:
-                async with session.post(url, json=record) as resp:
+                async with session.post(wa_url, json=record) as resp:
                     status = resp.status
             print(f'record from {record["app"]} sent, status {status}')
 
