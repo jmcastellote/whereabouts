@@ -25,4 +25,3 @@ async def get_session() -> AsyncSession:
 # see tip under https://docs.sqlalchemy.org/en/14/orm/extensions/asyncio.html#synopsis-core
 async def dispose():
     await engine.dispose()
-

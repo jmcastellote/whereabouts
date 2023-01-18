@@ -13,5 +13,5 @@ def haversine(lon1, lat1, lon2, lat2):
     dlat = lat2 - lat1
     angle = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
     distance_radians = 2 * asin(sqrt(angle))
-    radius = 6371000  # Radius of earth in meters. Use 3956 for miles. Determines return value units.
+    radius = 6371000  # Radius of earth in meters.
     return distance_radians * radius
