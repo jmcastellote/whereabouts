@@ -1,4 +1,0 @@
-headers:
-# Header Names for OwnTracks
-  user: X-Limit-U
-  device: X-Limit-D
