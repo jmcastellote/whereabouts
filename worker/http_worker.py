@@ -1,7 +1,5 @@
 import asyncio
-from datetime import datetime
-import os, aiohttp, json
-import src.schemas as s
+import os, aiohttp
 
 token = os.environ.get('HA_TOKEN')
 
