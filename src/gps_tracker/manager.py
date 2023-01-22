@@ -3,11 +3,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from sqlalchemy import and_
 
-from core.model.gps_record import GpsRecord
-from core.model.gps_tracker import GpsTracker
-import core.schemas.gpsrecord as gps
-import core.schemas.gpstracker as gps_tracker
-from core import haversine
+from src.gps_tracker.model import GpsTracker
+import src.gps_tracker.schema as gps_tracker
+from src.gps_distance import haversine
 
 
 class GpsTrackerManager:

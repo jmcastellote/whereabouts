@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float, UniqueConstraint, Index
 from sqlalchemy.orm import relationship
 
-from core.model.base import Base
+from src.models import Base
 
 class GpsRecord(Base):
 

@@ -3,9 +3,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
 from sqlalchemy import and_
 
-from core.model.gps_record import GpsRecord
-import core.schemas.gpsrecord as gps
-from core import haversine
+from src.gps_record.model import GpsRecord
+import src.gps_record.schema as gps
+from src.gps_distance import haversine
 
 class GpsRecordManager:
     '''
@@ -19,8 +19,8 @@ class GpsRecordManager:
     def __init__(self) -> None:
         pass
 
-
-    async def get_gpsrecord(self, db_session: AsyncSession, record_id: int):
+    @classmethod
+    async def get_gpsrecord(cls, db_session: AsyncSession, record_id: int):
         result = await db_session.execute(
             select(GpsRecord).filter(
                 GpsRecord.id == record_id
@@ -29,7 +29,8 @@ class GpsRecordManager:
         return result.scalars().first()
 
 
-    async def get_last_gpsrecord(self, db_session: AsyncSession, device: str, app: str, user: str):
+    @classmethod
+    async def get_last_gpsrecord(cls, db_session: AsyncSession, device: str, app: str, user: str):
         result = await db_session.execute(
             select(GpsRecord).filter(
                 and_(
@@ -42,8 +43,9 @@ class GpsRecordManager:
         return result.scalars().first()
 
 
+    @classmethod
     async def get_gpsrecords_by_app(
-        self,
+        cls,
         db_session: AsyncSession,
         device: str,
         app: str,
@@ -60,7 +62,8 @@ class GpsRecordManager:
         return result.scalars().all()
 
 
-    async def get_gpsrecords_by_device(self, db_session: AsyncSession, device: str, limit: int = DEFAULT_GPS_RECORDS_LIMIT):
+    @classmethod
+    async def get_gpsrecords_by_device(cls, db_session: AsyncSession, device: str, limit: int = DEFAULT_GPS_RECORDS_LIMIT):
         result = await db_session.execute(
             select(GpsRecord).filter(
                 GpsRecord.device == device
@@ -69,7 +72,8 @@ class GpsRecordManager:
         return result.scalars().all()
 
 
-    async def get_gpsrecords(self, db_session: AsyncSession, limit: int = DEFAULT_GPS_RECORDS_LIMIT):
+    @classmethod
+    async def get_gpsrecords(cls, db_session: AsyncSession, limit: int = DEFAULT_GPS_RECORDS_LIMIT):
         result = await db_session.execute(
             select(GpsRecord).order_by(
                 GpsRecord.datetime.desc()
@@ -78,17 +82,18 @@ class GpsRecordManager:
         return result.scalars().all()
 
 
-    async def create_gpsrecord(self, db_session: AsyncSession, gpsrecord: gps.GpsRecordCreate):
+    @classmethod
+    async def create_gpsrecord(cls, db_session: AsyncSession, gpsrecord: gps.GpsRecordCreate):
         db_session_gpsrecord = GpsRecord(**gpsrecord.dict())
-        last = await self.get_last_gpsrecord(
+        last = await cls.get_last_gpsrecord(
             db_session,
             db_session_gpsrecord.device,
             db_session_gpsrecord.app,
             db_session_gpsrecord.user,
         )
-        distance = self.hv_distance(db_session_gpsrecord, last)
+        distance = cls().hv_distance(db_session_gpsrecord, last)
         db_session_gpsrecord.distance = distance
-        if distance >= self.MIN_DISTANCE:
+        if distance >= cls.MIN_DISTANCE:
             try:
                 db_session.add(db_session_gpsrecord)
                 await db_session.commit()

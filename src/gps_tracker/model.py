@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, Column, Integer, String, DateTime, Float, Index, JSON
 
-from core.model.base import Base
+from src.models import Base
 
 class GpsTracker(Base):
 

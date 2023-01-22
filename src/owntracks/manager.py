@@ -1,10 +1,10 @@
 import dateparser, json
-from core.classes.gps_record_manager import GpsRecordManager
-from core.schemas.owntracks import OwntracksRecordBase
-from core.schemas.gpstracker import GpsTracker
-from core.schemas.gpsrecord import GpsRecordCreate
-from core.database import async_session
-from core.classes.salty import salty
+from src.gps_record.manager import GpsRecordManager
+from src.owntracks.schema import OwntracksRecordBase
+from src.gps_tracker.schema import GpsTracker
+from src.gps_record.schema import GpsRecordCreate
+from src.database import async_session
+from src.salty.client import salty
 
 class OwntracksManager(GpsRecordManager):
   '''
@@ -29,7 +29,7 @@ class OwntracksManager(GpsRecordManager):
           '_type': 'location',
           'lat': self.raw_record['lat'],
           'lon': self.raw_record['lon'],
-          'tid': 'J',
+          'tid': 'Jorge',
           'tst': self.raw_record['tst']
       }]
       # Display messages in the app

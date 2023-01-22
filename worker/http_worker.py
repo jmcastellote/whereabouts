@@ -1,7 +1,7 @@
 import asyncio
 from datetime import datetime
 import os, aiohttp, json
-import core.schemas as s
+import src.schemas as s
 
 token = os.environ.get('HA_TOKEN')
 
@@ -24,7 +24,7 @@ headers = {
 
 
 base_url = f'http://172.18.0.1:8123/api/states/'
-wa_url = f'http://172.18.0.1:8787/record/'
+wa_url = f'http://172.18.0.1:8787/records/'
 
 async def fetch_gps_records_from_ha() -> None:
     for device in devices:
