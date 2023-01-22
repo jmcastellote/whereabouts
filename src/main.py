@@ -13,7 +13,7 @@ from owntracks.router import router as owntracks_router
 app = FastAPI()
 
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="../templates")
 
 
 app.include_router(records_router)
