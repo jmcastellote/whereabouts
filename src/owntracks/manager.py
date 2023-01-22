@@ -21,7 +21,7 @@ class OwntracksManager(GpsRecordManager):
       record = self.build_from_ot_record(ot_record, gpstracker)
       # because this query is nearly concurrent, it needs its own session
       async with async_session() as db_session:
-          await super.create_gpsrecord(db_session=db_session, gpsrecord=record)
+          await super().create_gpsrecord(db_session=db_session, gpsrecord=record)
 
 
   async def build_ot_reply(self) -> dict:

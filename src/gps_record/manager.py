@@ -91,7 +91,7 @@ class GpsRecordManager:
             db_session_gpsrecord.app,
             db_session_gpsrecord.user,
         )
-        distance = cls().hv_distance(db_session_gpsrecord, last)
+        distance = cls.hv_distance(db_session_gpsrecord, last)
         db_session_gpsrecord.distance = distance
         if distance >= cls.MIN_DISTANCE:
             try:
@@ -109,6 +109,7 @@ class GpsRecordManager:
             )
 
 
+    @classmethod
     def hv_distance(self, gps_record_1: GpsRecord, gps_record_2: GpsRecord) -> float:
         if not gps_record_1 or not gps_record_2:
             return self.MIN_DISTANCE
