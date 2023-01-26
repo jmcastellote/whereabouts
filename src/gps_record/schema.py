@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 class GpsRecordBase(BaseModel):
     datetime: datetime
-    description: Optional[str] = None
+    description: Optional[str]
     latitude: float
     longitude: float
     altitude: Optional[float]

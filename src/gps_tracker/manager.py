@@ -5,7 +5,6 @@ from sqlalchemy import and_
 
 from src.gps_tracker.model import GpsTracker
 import src.gps_tracker.schema as gps_tracker
-from src.gps_distance import haversine
 
 
 class GpsTrackerManager:

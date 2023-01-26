@@ -1,5 +1,4 @@
 fastapi[all]
-#psycopg2
 typing
 sqlalchemy[asyncio]
 pydantic
@@ -9,3 +8,8 @@ pynacl
 aiohttp
 dateparser
 asyncpg
+databases
+#dev, to be moved
+pytest
+httpx
+coverage
