@@ -22,7 +22,7 @@ headers = {
 
 
 base_url = f'http://172.18.0.1:8123/api/states/'
-wa_url = f'http://172.18.0.1:8787/records/'
+wa_url = f'http://172.18.0.1:8787/record/'
 
 async def fetch_gps_records_from_ha() -> None:
     for device in devices:

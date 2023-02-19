@@ -3,7 +3,6 @@ from src.gps_record.manager import GpsRecordManager
 from src.owntracks.schema import OwntracksRecordBase
 from src.gps_tracker.schema import GpsTracker
 from src.gps_record.schema import GpsRecordCreate
-from src.database import async_session
 from src.salty.client import salty
 
 class OwntracksManager(GpsRecordManager):

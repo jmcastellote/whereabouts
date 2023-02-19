@@ -1,8 +1,6 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import APIRouter
 
-from src.database import get_session
 from src.gps_tracker.manager import GpsTrackerManager
 from src.gps_tracker.schema import GpsTracker, GpsTrackerCreate, GpsTrackerUpdate
 
@@ -14,18 +12,10 @@ router = APIRouter(
 
 
 @router.post("/", response_model=GpsTracker, status_code=201)
-async def create_tracker(gpstracker: GpsTrackerCreate, db_session: AsyncSession = Depends(get_session)
-):
-    record = await GpsTrackerManager().create_gpstracker(db_session=db_session, gpstracker=gpstracker)
-    if not record:
-        raise HTTPException(status_code=409, detail="Tracker already exists")
-    return record
+async def create_tracker(gpstracker: GpsTrackerCreate):
+    return await GpsTrackerManager().create_gpstracker(gpstracker=gpstracker)
 
 
-@router.put("/", response_model=GpsTracker)
-async def update_tracker(gpstracker: GpsTrackerUpdate, db_session: AsyncSession = Depends(get_session)
-):
-    record = await GpsTrackerManager().update_gpstracker(db_session=db_session, gpstracker=gpstracker)
-    if not record:
-        raise HTTPException(status_code=422, detail="Tracker not found")
-    return record
+@router.put("/", response_model=GpsTrackerUpdate)
+async def update_tracker(gpstracker: GpsTrackerUpdate):
+    return await GpsTrackerManager().update_gpstracker(gpstracker=gpstracker)

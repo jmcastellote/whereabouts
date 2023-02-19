@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "whereabouts"
+version = "0.1.0"
+description = ""
+authors = ["Jorge Castellote <jorge@nubelibre.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+fastapi = {extras = ["all"], version = ">0.90"}
+sqlalchemy = {version = "^1", extras = ["asyncio"]}
+pydantic = "*"
+uvicorn = "*"
+alembic = "*"
+pynacl = "*"
+aiohttp = "*"
+dateparser = "*"
+asyncpg = "*"
+databases = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = ">=7"
+pytest-asyncio = ">=0.20.3"
+httpx = ">=0.23.3"
+coverage = ">=7.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

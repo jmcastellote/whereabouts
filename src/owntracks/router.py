@@ -3,7 +3,6 @@ import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import APIRouter
 from fastapi import Depends, APIRouter, HTTPException
-from src.database import get_session
 from src.gps_tracker.manager import GpsTrackerManager
 from src.home_assistant.client import HomeAssistant
 from src.owntracks.manager import OwntracksManager
@@ -18,11 +17,10 @@ router = APIRouter(
 @router.post('/{url_id}/', response_model=dict, status_code=200)
 async def create_owntracks_record(
     encrypted_record: OwntracksEncryptedRecordBase,
-    db_session: AsyncSession = Depends(get_session),
     url_id: str = None
 ):
     # check if it's a known owntracks tracker (by checking the url_id)
-    gps_tracker = await GpsTrackerManager().get_gpstracker_by_url_id(db_session=db_session,url_id=url_id)
+    gps_tracker = await GpsTrackerManager().get_gpstracker_by_url_id(url_id=url_id)
     if gps_tracker:
         otm = OwntracksManager(encrypted_record=encrypted_record)
         asyncio.create_task(otm.create_owntracks_record(gpstracker=gps_tracker))

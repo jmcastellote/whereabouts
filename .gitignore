@@ -4,5 +4,6 @@ __pycache__
 *.PNG
 *.jpg
 *.JPG
+*.lock
 *htmlcov*
 .coverage

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, constr
+from pydantic import BaseModel, constr, validator
 from datetime import datetime
 
 class GpsTrackerBase(BaseModel):
@@ -16,6 +16,7 @@ class GpsTrackerBase(BaseModel):
     url_id: constr(max_length=16)
     app_config: dict = {}
     active: bool = True
+
 
 class GpsTrackerCreate(GpsTrackerBase):
     pass
