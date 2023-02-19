@@ -16,7 +16,8 @@ class GpsTrackerManager:
         pass
 
 
-    async def get_gpstracker(self, device: str, app: str, user: str):
+    @classmethod
+    async def get_gpstracker(cls, device: str, app: str, user: str):
         query = select(GpsTracker).filter(
             GpsTracker.device == device,
             GpsTracker.app == app,
@@ -28,19 +29,25 @@ class GpsTrackerManager:
         return result
 
 
-    async def get_gpstracker_by_url_id(self, url_id: str):
+    @classmethod
+    async def get_gpstracker_by_url_id(cls, url_id: str):
         query = select(GpsTracker).filter(GpsTracker.url_id == url_id)
-        return await database.fetch_one(query=query)
+        result = await database.fetch_one(query=query)
+        if not result:
+            raise GpsTrackerNotFound()
+        return result
 
 
-    async def create_gpstracker(self, gpstracker: gps_tracker.GpsTrackerCreate) -> GpsTracker:
+    @classmethod
+    async def create_gpstracker(cls, gpstracker: gps_tracker.GpsTrackerCreate) -> GpsTracker:
         query = insert(GpsTracker)
         tracker_id = await database.execute(query=query, values=gpstracker.dict())
         return GpsTracker(id=tracker_id, **gpstracker.dict())
 
 
-    async def update_gpstracker(self, gpstracker: gps_tracker.GpsTrackerUpdate) -> gps_tracker.GpsTracker:
-        db_gpstracker = await self.get_gpstracker(gpstracker.device, gpstracker.app, gpstracker.tracker_bearer)
+    @classmethod
+    async def update_gpstracker(cls, gpstracker: gps_tracker.GpsTrackerUpdate) -> GpsTracker:
+        db_gpstracker = await cls.get_gpstracker(gpstracker.device, gpstracker.app, gpstracker.tracker_bearer)
         query = update(GpsTracker).where(and_(
             GpsTracker.device == gpstracker.device,
             GpsTracker.app == gpstracker.app,

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, constr, validator
+from pydantic import BaseModel, constr
 from datetime import datetime
 
 class GpsTrackerBase(BaseModel):

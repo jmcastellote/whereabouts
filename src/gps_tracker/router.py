@@ -7,15 +7,15 @@ from src.gps_tracker.schema import GpsTracker, GpsTrackerCreate, GpsTrackerUpdat
 
 router = APIRouter(
     prefix="/tracker",
-    tags=["tracker"],
+    tags=["gps_tracker"],
 )
 
 
 @router.post("/", response_model=GpsTracker, status_code=201)
 async def create_tracker(gpstracker: GpsTrackerCreate):
-    return await GpsTrackerManager().create_gpstracker(gpstracker=gpstracker)
+    return await GpsTrackerManager.create_gpstracker(gpstracker=gpstracker)
 
 
 @router.put("/", response_model=GpsTrackerUpdate)
 async def update_tracker(gpstracker: GpsTrackerUpdate):
-    return await GpsTrackerManager().update_gpstracker(gpstracker=gpstracker)
+    return await GpsTrackerManager.update_gpstracker(gpstracker=gpstracker)
